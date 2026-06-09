@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Walmart Marketplace Shipping Desk</title>
+  <style>
+    :root {
+      --ink: #17202a;
+      --muted: #64707d;
+      --line: #d9e1e8;
+      --panel: #ffffff;
+      --soft: #f4f7f9;
+      --walmart: #0071ce;
+      --walmart-dark: #004f9a;
+      --spark: #ffc220;
+      --ok: #177245;
+      --warn: #a85d00;
+      --danger: #b42318;
+      --shadow: 0 18px 45px rgba(24, 39, 75, 0.12);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #eef3f7;
+      min-height: 100vh;
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 276px minmax(0, 1fr);
+    }
+
+    aside {
+      background: #10243a;
+      color: #f7fbff;
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .brand {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .spark {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: var(--walmart);
+      position: relative;
+    }
+
+    .spark::before {
+      content: "";
+      width: 16px;
+      height: 16px;
+      background:
+        radial-gradient(circle at 50% 0, var(--spark) 0 3px, transparent 3.5px),
+        radial-gradient(circle at 100% 50%, var(--spark) 0 3px, transparent 3.5px),
+        radial-gradient(circle at 50% 100%, var(--spark) 0 3px, transparent 3.5px),
+        radial-gradient(circle at 0 50%, var(--spark) 0 3px, transparent 3.5px);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .brand span {
+      color: #b8c8d9;
+      font-size: 12px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav button {
+      width: 100%;
+      border: 0;
+      border-radius: 7px;
+      padding: 11px 12px;
+      color: #d8e5f0;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .nav button.active, .nav button:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+    .api-note {
+      margin-top: auto;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      padding: 14px;
+      color: #d5e4f0;
+      font-size: 13px;
+      line-height: 1.45;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    main {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      padding: 18px 26px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-title h2 {
+      margin: 0 0 4px;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    .header-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      padding: 10px 13px;
+      cursor: pointer;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      min-height: 40px;
+    }
+
+    .btn:hover { border-color: #a9b7c6; }
+    .btn.primary { background: var(--walmart); border-color: var(--walmart); color: #fff; }
+    .btn.primary:hover { background: var(--walmart-dark); }
+    .btn.good { background: var(--ok); border-color: var(--ok); color: #fff; }
+    .btn.warn { background: #fff7ed; border-color: #fed7aa; color: #7c2d12; }
+    .btn.danger { background: #fff5f5; border-color: #f7b4b0; color: var(--danger); }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+      display: inline-block;
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .icon.download::before { content: ""; position: absolute; left: 7px; top: 1px; width: 4px; height: 10px; background: currentColor; }
+    .icon.download::after { content: ""; position: absolute; left: 3px; top: 8px; width: 12px; height: 8px; border-left: 3px solid currentColor; border-bottom: 3px solid currentColor; transform: rotate(-45deg); }
+    .icon.print::before { content: ""; position: absolute; left: 3px; top: 6px; width: 12px; height: 8px; border: 2px solid currentColor; }
+    .icon.print::after { content: ""; position: absolute; left: 5px; top: 1px; width: 8px; height: 6px; border: 2px solid currentColor; background: #fff; }
+    .icon.sync::before { content: ""; position: absolute; inset: 3px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; }
+    .icon.ship::before { content: ""; position: absolute; left: 1px; top: 6px; width: 16px; height: 9px; border: 2px solid currentColor; }
+    .icon.ship::after { content: ""; position: absolute; left: 11px; top: 9px; width: 4px; height: 4px; border-radius: 50%; background: currentColor; box-shadow: -9px 0 0 currentColor; }
+
+    .workspace {
+      padding: 22px 26px 30px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.65fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .section {
+      display: none;
+      grid-column: 1 / -1;
+    }
+
+    .section.active { display: grid; gap: 18px; grid-template-columns: subgrid; }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(18, 32, 47, 0.04);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-head h3 { margin: 0; font-size: 16px; letter-spacing: 0; }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) 154px 154px;
+      gap: 10px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfdff;
+    }
+
+    .input, .select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px 11px;
+      background: #fff;
+      color: var(--ink);
+      min-height: 40px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      background: #f8fafc;
+    }
+
+    tr { cursor: pointer; }
+    tbody tr:hover { background: #f7fbff; }
+    tbody tr.selected { background: #eaf5ff; }
+
+    .status {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      background: #eef2f7;
+      color: #40566d;
+      white-space: nowrap;
+    }
+
+    .status.released { background: #ecfdf3; color: var(--ok); }
+    .status.label { background: #fff7db; color: #7a4d00; }
+    .status.shipped { background: #e8f1ff; color: #174ea6; }
+
+    .detail {
+      padding: 18px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 30px 18px;
+      text-align: center;
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 8px 12px;
+      font-size: 14px;
+    }
+
+    .kv span:nth-child(odd) { color: var(--muted); }
+
+    .items {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item-row {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      background: #fbfdff;
+      font-size: 14px;
+    }
+
+    .item-row strong { display: block; margin-bottom: 3px; }
+    .muted { color: var(--muted); }
+
+    .form-grid {
+      padding: 18px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    label { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+    label strong { color: var(--ink); font-size: 13px; }
+
+    .wide { grid-column: 1 / -1; }
+
+    .callout {
+      border-left: 4px solid var(--walmart);
+      background: #f5faff;
+      padding: 13px 14px;
+      color: #244760;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .preview {
+      padding: 16px;
+      background: #f8fafc;
+      min-height: 240px;
+    }
+
+    .label-preview, .slip-preview {
+      background: #fff;
+      color: #111;
+      margin: 0 auto;
+      border: 1px solid #111;
+      width: min(100%, 420px);
+      min-height: 260px;
+      padding: 18px;
+      font-family: Arial, sans-serif;
+    }
+
+    .label-preview {
+      aspect-ratio: 4 / 6;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .barcode {
+      height: 64px;
+      background: repeating-linear-gradient(90deg, #111 0 2px, #fff 2px 5px, #111 5px 6px, #fff 6px 10px);
+      margin: 8px 0;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .api-list {
+      display: grid;
+      gap: 10px;
+      padding: 18px;
+    }
+
+    .endpoint {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 12px;
+      background: #fbfdff;
+      display: grid;
+      gap: 5px;
+      font-size: 13px;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      background: #eef3f7;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: #10243a;
+      color: #fff;
+      padding: 13px 15px;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: 180ms ease;
+      max-width: min(360px, calc(100vw - 40px));
+      z-index: 10;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    .file-input { display: none; }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      aside { position: static; padding: 16px; }
+      .nav { grid-template-columns: repeat(3, 1fr); }
+      .api-note { margin-top: 0; }
+      .workspace { grid-template-columns: 1fr; padding: 16px; }
+      .section.active { grid-template-columns: 1fr; }
+      .settings-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 680px) {
+      header { align-items: stretch; flex-direction: column; padding: 16px; }
+      .actions { justify-content: stretch; }
+      .actions .btn { flex: 1 1 150px; justify-content: center; }
+      .filters { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      table { font-size: 13px; }
+      th:nth-child(4), td:nth-child(4) { display: none; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .app, aside, header, .workspace, .toast { display: none !important; }
+      .print-root { display: block !important; }
+      @page { margin: 0.35in; }
+    }
+
+    .print-root { display: none; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="spark" aria-hidden="true"></div>
+        <div>
+          <h1>Walmart Shipping Desk</h1>
+          <span>Marketplace order operations</span>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Primary">
+        <button class="active" data-section="orders">Orders</button>
+        <button data-section="shipping">Ship with Walmart</button>
+        <button data-section="settings">API setup</button>
+      </nav>
+      <div class="api-note">
+        Browser apps should call your own backend proxy. Keep Walmart Client ID, Client Secret, and refresh tokens off the page.
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <div class="header-title">
+          <h2 id="pageTitle">Released orders</h2>
+          <p id="pageSubtitle">Download orders, prepare shipments, and print documents from one queue.</p>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="syncBtn"><span class="icon sync"></span>Sync orders</button>
+          <button class="btn" id="importBtn"><span class="icon download"></span>Import JSON</button>
+          <button class="btn" id="downloadBtn"><span class="icon download"></span>Download CSV</button>
+          <input class="file-input" id="fileInput" type="file" accept="application/json,.json">
+        </div>
+      </header>
+
+      <div class="workspace">
+        <section class="section active" id="orders">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Order queue</h3>
+              <span id="orderCount" class="muted"></span>
+            </div>
+            <div class="filters">
+              <input class="input" id="searchInput" placeholder="Search PO, customer, SKU, city">
+              <select class="select" id="statusFilter">
+                <option value="all">All statuses</option>
+                <option value="Released">Released</option>
+                <option value="Label ready">Label ready</option>
+                <option value="Shipped">Shipped</option>
+              </select>
+              <select class="select" id="methodFilter">
+                <option value="all">All methods</option>
+                <option value="VALUE">VALUE</option>
+                <option value="STANDARD">STANDARD</option>
+                <option value="EXPEDITED">EXPEDITED</option>
+              </select>
+            </div>
+            <div style="overflow:auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>PO</th>
+                    <th>Ship to</th>
+                    <th>Items</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Order details</h3>
+              <button class="btn" id="packingSlipBtn"><span class="icon print"></span>Packing slip</button>
+            </div>
+            <div class="detail" id="orderDetail"></div>
+          </div>
+        </section>
+
+        <section class="section" id="shipping">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Shipment</h3>
+              <button class="btn good" id="shipBtn"><span class="icon ship"></span>Buy label</button>
+            </div>
+            <div class="form-grid">
+              <div class="wide callout">
+                Use this page with a backend that exchanges Walmart tokens, fetches Ship with Walmart estimates, creates labels, downloads label PDFs, and submits the final `/shipping` update.
+              </div>
+              <label><strong>Purchase order</strong><input class="input" id="shipPo" readonly></label>
+              <label><strong>Carrier</strong>
+                <select class="select" id="carrier">
+                  <option>USPS</option>
+                  <option>FedEx</option>
+                </select>
+              </label>
+              <label><strong>Package type</strong>
+                <select class="select" id="packageType">
+                  <option>YOUR_PACKAGING</option>
+                  <option>FEDEX_BOX</option>
+                  <option>USPS_PRIORITY_MAIL_BOX</option>
+                </select>
+              </label>
+              <label><strong>Service method</strong>
+                <select class="select" id="serviceMethod">
+                  <option>VALUE</option>
+                  <option>STANDARD</option>
+                  <option>EXPEDITED</option>
+                </select>
+              </label>
+              <label><strong>Weight (lb)</strong><input class="input" id="weight" type="number" min="0.1" step="0.1"></label>
+              <label><strong>Dimensions (L x W x H in)</strong><input class="input" id="dims" placeholder="12 x 9 x 4"></label>
+              <label><strong>Ship date</strong><input class="input" id="shipDate" type="date"></label>
+              <label><strong>Estimated label cost</strong><input class="input" id="labelCost" readonly></label>
+              <label class="wide"><strong>Tracking number</strong><input class="input" id="tracking" readonly></label>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Shipping label</h3>
+              <button class="btn" id="printLabelBtn"><span class="icon print"></span>Print label</button>
+            </div>
+            <div class="preview" id="labelPreview"></div>
+          </div>
+        </section>
+
+        <section class="section" id="settings">
+          <div class="settings-grid wide">
+            <div class="panel">
+              <div class="panel-head">
+                <h3>Backend proxy settings</h3>
+                <button class="btn primary" id="saveSettingsBtn">Save</button>
+              </div>
+              <div class="form-grid">
+                <label class="wide"><strong>Orders endpoint</strong><input class="input" id="ordersEndpoint" placeholder="/api/walmart/orders/released"></label>
+                <label class="wide"><strong>Create label endpoint</strong><input class="input" id="labelEndpoint" placeholder="/api/walmart/ship-with-walmart/labels"></label>
+                <label class="wide"><strong>Confirm shipment endpoint</strong><input class="input" id="shipmentEndpoint" placeholder="/api/walmart/orders/{purchaseOrderId}/shipping"></label>
+                <label class="wide"><strong>Store name</strong><input class="input" id="storeName" placeholder="Your Marketplace Store"></label>
+                <label class="wide"><strong>Ship from</strong><textarea id="shipFrom" rows="4" placeholder="Warehouse name&#10;Street&#10;City, ST ZIP"></textarea></label>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><h3>Walmart API map</h3></div>
+              <div class="api-list">
+                <div class="endpoint"><strong>Token</strong><code>POST https://marketplace.walmartapis.com/v3/token</code></div>
+                <div class="endpoint"><strong>Released orders</strong><code>GET https://marketplace.walmartapis.com/v3/orders/released</code></div>
+                <div class="endpoint"><strong>All orders</strong><code>GET https://marketplace.walmartapis.com/v3/orders</code></div>
+                <div class="endpoint"><strong>Ship order</strong><code>POST https://marketplace.walmartapis.com/v3/orders/{purchaseOrderId}/shipping</code></div>
+                <div class="endpoint"><strong>Ship with Walmart</strong><code>carriers → estimates → create label → download label</code></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="print-root" id="printRoot"></div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const sampleOrders = [
+      {
+        purchaseOrderId: "4500093812771",
+        customerOrderId: "7823451679024",
+        sellerOrderId: "WM-10291",
+        orderDate: "2026-06-08",
+        status: "Released",
+        methodCode: "VALUE",
+        customer: { name: "Maya Chen", phone: "555-0147", email: "customer@example.com" },
+        address: { line1: "1846 Briar Hill Rd", city: "Columbus", state: "OH", postalCode: "43215" },
+        items: [
+          { lineNumber: "1", sku: "KIT-BAMBOO-12", name: "Bamboo Drawer Organizer Set", quantity: 1, price: 34.96 },
+          { lineNumber: "2", sku: "TOWEL-GRAY-06", name: "Cotton Hand Towel 6 Pack", quantity: 2, price: 18.88 }
+        ],
+        package: { weight: 3.4, dims: "14 x 10 x 5" },
+        tracking: "",
+        labelCost: ""
+      },
+      {
+        purchaseOrderId: "4500093814558",
+        customerOrderId: "7823451700181",
+        sellerOrderId: "WM-10292",
+        orderDate: "2026-06-08",
+        status: "Label ready",
+        methodCode: "STANDARD",
+        customer: { name: "Jordan Parker", phone: "555-0199", email: "customer@example.com" },
+        address: { line1: "77 Lakeview Terrace", city: "Phoenix", state: "AZ", postalCode: "85004" },
+        items: [
+          { lineNumber: "1", sku: "PET-BED-MED-BLU", name: "Washable Medium Pet Bed", quantity: 1, price: 42.5 }
+        ],
+        package: { weight: 5.8, dims: "20 x 16 x 8" },
+        tracking: "9400111899223848123377",
+        labelCost: "$8.42"
+      },
+      {
+        purchaseOrderId: "4500093815012",
+        customerOrderId: "7823451708192",
+        sellerOrderId: "WM-10293",
+        orderDate: "2026-06-07",
+        status: "Released",
+        methodCode: "EXPEDITED",
+        customer: { name: "Elena Rivera", phone: "555-0112", email: "customer@example.com" },
+        address: { line1: "901 Mission St", city: "San Francisco", state: "CA", postalCode: "94103" },
+        items: [
+          { lineNumber: "1", sku: "LAMP-DESK-BLK", name: "Adjustable LED Desk Lamp", quantity: 1, price: 27.99 }
+        ],
+        package: { weight: 2.1, dims: "13 x 7 x 7" },
+        tracking: "",
+        labelCost: ""
+      }
+    ];
+
+    let orders = JSON.parse(localStorage.getItem("wmOrders") || "null") || sampleOrders;
+    let settings = JSON.parse(localStorage.getItem("wmSettings") || "null") || {
+      ordersEndpoint: "",
+      labelEndpoint: "",
+      shipmentEndpoint: "",
+      storeName: "Marketplace Store",
+      shipFrom: "Main Warehouse\n100 Commerce Way\nBentonville, AR 72712"
+    };
+    let selectedId = orders[0]?.purchaseOrderId || "";
+    let currentSection = "orders";
+
+    const $ = (id) => document.getElementById(id);
+
+    function money(value) {
+      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
+    }
+
+    function selectedOrder() {
+      return orders.find(order => order.purchaseOrderId === selectedId) || orders[0];
+    }
+
+    function persistOrders() {
+      localStorage.setItem("wmOrders", JSON.stringify(orders));
+    }
+
+    function toast(message) {
+      const el = $("toast");
+      el.textContent = message;
+      el.classList.add("show");
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => el.classList.remove("show"), 2600);
+    }
+
+    function filteredOrders() {
+      const search = $("searchInput").value.trim().toLowerCase();
+      const status = $("statusFilter").value;
+      const method = $("methodFilter").value;
+      return orders.filter(order => {
+        const haystack = [
+          order.purchaseOrderId,
+          order.customerOrderId,
+          order.sellerOrderId,
+          order.customer.name,
+          order.address.city,
+          ...order.items.flatMap(item => [item.sku, item.name])
+        ].join(" ").toLowerCase();
+        return (!search || haystack.includes(search)) &&
+          (status === "all" || order.status === status) &&
+          (method === "all" || order.methodCode === method);
+      });
+    }
+
+    function statusClass(status) {
+      if (status === "Released") return "released";
+      if (status === "Label ready") return "label";
+      if (status === "Shipped") return "shipped";
+      return "";
+    }
+
+    function renderOrders() {
+      const rows = filteredOrders();
+      $("orderCount").textContent = `${rows.length} visible`;
+      $("ordersBody").innerHTML = rows.map(order => `
+        <tr class="${order.purchaseOrderId === selectedId ? "selected" : ""}" data-id="${order.purchaseOrderId}">
+          <td><strong>${order.purchaseOrderId}</strong><br><span class="muted">${order.sellerOrderId}</span></td>
+          <td>${order.customer.name}<br><span class="muted">${order.address.city}, ${order.address.state} ${order.address.postalCode}</span></td>
+          <td>${order.items.length} line${order.items.length === 1 ? "" : "s"}<br><span class="muted">${order.items.map(i => `${i.quantity}x ${i.sku}`).join(", ")}</span></td>
+          <td>${order.methodCode}</td>
+          <td><span class="status ${statusClass(order.status)}">${order.status}</span></td>
+        </tr>
+      `).join("") || `<tr><td colspan="5" class="empty">No orders match the current filters.</td></tr>`;
+      renderDetail();
+    }
+
+    function renderDetail() {
+      const order = selectedOrder();
+      if (!order) {
+        $("orderDetail").innerHTML = `<div class="empty">Import or sync orders to begin.</div>`;
+        return;
+      }
+      const total = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      $("orderDetail").innerHTML = `
+        <div class="kv">
+          <span>Purchase order</span><strong>${order.purchaseOrderId}</strong>
+          <span>Customer order</span><span>${order.customerOrderId}</span>
+          <span>Order date</span><span>${order.orderDate}</span>
+          <span>Status</span><span><span class="status ${statusClass(order.status)}">${order.status}</span></span>
+          <span>Ship to</span><span>${order.customer.name}<br>${order.address.line1}<br>${order.address.city}, ${order.address.state} ${order.address.postalCode}</span>
+          <span>Total</span><strong>${money(total)}</strong>
+        </div>
+        <div class="items">
+          ${order.items.map(item => `
+            <div class="item-row">
+              <div><strong>${item.name}</strong><span class="muted">SKU ${item.sku} · Line ${item.lineNumber}</span></div>
+              <div>${item.quantity} x ${money(item.price)}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+      syncShippingForm();
+    }
+
+    function syncShippingForm() {
+      const order = selectedOrder();
+      if (!order) return;
+      $("shipPo").value = order.purchaseOrderId;
+      $("serviceMethod").value = order.methodCode;
+      $("weight").value = order.package.weight;
+      $("dims").value = order.package.dims;
+      $("shipDate").value = new Date().toISOString().slice(0, 10);
+      $("labelCost").value = order.labelCost || estimateCost(order);
+      $("tracking").value = order.tracking || "";
+      renderLabel();
+    }
+
+    function estimateCost(order) {
+      const base = order.methodCode === "EXPEDITED" ? 12.75 : order.methodCode === "STANDARD" ? 8.35 : 6.9;
+      return `$${(base + Number(order.package.weight || 1) * 0.62).toFixed(2)}`;
+    }
+
+    function generateTrackingNumber() {
+      const digits = Array.from({ length: 20 }, () => Math.floor(Math.random() * 10)).join("");
+      return `94${digits}`;
+    }
+
+    function renderLabel() {
+      const order = selectedOrder();
+      if (!order) {
+        $("labelPreview").innerHTML = `<div class="empty">Select an order to preview a label.</div>`;
+        return;
+      }
+      const tracking = $("tracking").value || "Label not purchased";
+      $("labelPreview").innerHTML = `
+        <div class="label-preview">
+          <div><strong>${$("carrier").value} ${$("serviceMethod").value}</strong><br>Ship with Walmart</div>
+          <div class="barcode"></div>
+          <div style="font-size:13px">Tracking<br><strong>${tracking}</strong></div>
+          <div style="border-top:1px solid #111; padding-top:10px">
+            <strong>SHIP TO</strong><br>
+            ${order.customer.name}<br>
+            ${order.address.line1}<br>
+            ${order.address.city}, ${order.address.state} ${order.address.postalCode}
+          </div>
+          <div style="font-size:12px">PO ${order.purchaseOrderId} · ${$("dims").value} · ${$("weight").value} lb</div>
+        </div>
+      `;
+    }
+
+    function packingSlipHtml(order) {
+      const total = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      return `
+        <div style="font-family:Arial,sans-serif;color:#111;padding:24px">
+          <h1 style="font-size:24px;margin:0 0 4px">${settings.storeName}</h1>
+          <div style="font-size:13px;margin-bottom:22px;white-space:pre-line">${settings.shipFrom}</div>
+          <h2 style="font-size:20px;margin:0 0 14px">Packing Slip</h2>
+          <table style="width:100%;border-collapse:collapse;margin-bottom:18px">
+            <tr><td style="padding:6px 0;color:#555">Purchase order</td><td style="padding:6px 0"><strong>${order.purchaseOrderId}</strong></td></tr>
+            <tr><td style="padding:6px 0;color:#555">Customer order</td><td style="padding:6px 0">${order.customerOrderId}</td></tr>
+            <tr><td style="padding:6px 0;color:#555">Ship to</td><td style="padding:6px 0">${order.customer.name}<br>${order.address.line1}<br>${order.address.city}, ${order.address.state} ${order.address.postalCode}</td></tr>
+          </table>
+          <table style="width:100%;border-collapse:collapse">
+            <thead><tr>
+              <th style="text-align:left;border-bottom:2px solid #111;padding:8px">SKU</th>
+              <th style="text-align:left;border-bottom:2px solid #111;padding:8px">Item</th>
+              <th style="text-align:right;border-bottom:2px solid #111;padding:8px">Qty</th>
+            </tr></thead>
+            <tbody>
+              ${order.items.map(item => `<tr><td style="border-bottom:1px solid #ccc;padding:8px">${item.sku}</td><td style="border-bottom:1px solid #ccc;padding:8px">${item.name}</td><td style="border-bottom:1px solid #ccc;padding:8px;text-align:right">${item.quantity}</td></tr>`).join("")}
+            </tbody>
+          </table>
+          <p style="margin-top:18px;font-size:13px">Merchandise total: <strong>${money(total)}</strong></p>
+        </div>
+      `;
+    }
+
+    function labelHtml(order) {
+      return `
+        <div style="width:4in;height:6in;border:2px solid #111;padding:.2in;font-family:Arial,sans-serif;color:#111">
+          <div style="font-size:20px;font-weight:700">${$("carrier").value} ${$("serviceMethod").value}</div>
+          <div style="font-size:12px;margin-bottom:.12in">Ship with Walmart · PO ${order.purchaseOrderId}</div>
+          <div style="height:.8in;background:repeating-linear-gradient(90deg,#111 0 2px,#fff 2px 5px,#111 5px 6px,#fff 6px 10px);margin:.15in 0"></div>
+          <div style="font-size:13px;margin-bottom:.2in">Tracking<br><strong>${$("tracking").value || "Label not purchased"}</strong></div>
+          <div style="border-top:2px solid #111;padding-top:.16in;font-size:15px">
+            <strong>SHIP TO</strong><br>
+            ${order.customer.name}<br>
+            ${order.address.line1}<br>
+            ${order.address.city}, ${order.address.state} ${order.address.postalCode}
+          </div>
+          <div style="border-top:1px solid #111;margin-top:.18in;padding-top:.12in;font-size:12px;white-space:pre-line">
+            <strong>FROM</strong><br>${settings.shipFrom}
+          </div>
+        </div>
+      `;
+    }
+
+    function printHtml(html) {
+      $("printRoot").innerHTML = html;
+      window.print();
+    }
+
+    function downloadCsv() {
+      const headers = ["purchaseOrderId", "customerOrderId", "sellerOrderId", "status", "methodCode", "customer", "city", "state", "postalCode", "skus", "tracking"];
+      const lines = [headers.join(",")];
+      filteredOrders().forEach(order => {
+        const row = [
+          order.purchaseOrderId,
+          order.customerOrderId,
+          order.sellerOrderId,
+          order.status,
+          order.methodCode,
+          order.customer.name,
+          order.address.city,
+          order.address.state,
+          order.address.postalCode,
+          order.items.map(item => `${item.quantity}x ${item.sku}`).join("; "),
+          order.tracking || ""
+        ].map(value => `"${String(value).replaceAll('"', '""')}"`);
+        lines.push(row.join(","));
+      });
+      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `walmart-orders-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast("CSV download created.");
+    }
+
+    async function syncOrders() {
+      if (!settings.ordersEndpoint) {
+        toast("No backend endpoint set. Showing sample released orders.");
+        orders = sampleOrders;
+        selectedId = orders[0].purchaseOrderId;
+        persistOrders();
+        renderOrders();
+        return;
+      }
+      try {
+        const response = await fetch(settings.ordersEndpoint);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        orders = Array.isArray(data) ? data : data.orders || data.elements?.order || sampleOrders;
+        selectedId = orders[0]?.purchaseOrderId || "";
+        persistOrders();
+        renderOrders();
+        toast("Orders synced from backend.");
+      } catch (error) {
+        toast(`Sync failed: ${error.message}`);
+      }
+    }
+
+    async function buyLabel() {
+      const order = selectedOrder();
+      if (!order) return;
+      const payload = {
+        purchaseOrderId: order.purchaseOrderId,
+        carrier: $("carrier").value,
+        packageType: $("packageType").value,
+        methodCode: $("serviceMethod").value,
+        weight: Number($("weight").value),
+        dimensions: $("dims").value,
+        shipDate: $("shipDate").value,
+        shipTo: order.address,
+        orderLines: order.items.map(item => ({ lineNumber: item.lineNumber, quantity: item.quantity }))
+      };
+
+      if (settings.labelEndpoint) {
+        try {
+          const response = await fetch(settings.labelEndpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          order.tracking = data.trackingNumber || data.tracking || order.tracking;
+          order.labelCost = data.labelCost || data.rate || estimateCost(order);
+        } catch (error) {
+          toast(`Label request failed: ${error.message}`);
+          return;
+        }
+      } else {
+        order.tracking = generateTrackingNumber();
+        order.labelCost = estimateCost(order);
+      }
+      order.status = "Label ready";
+      order.package.weight = Number($("weight").value);
+      order.package.dims = $("dims").value;
+      persistOrders();
+      renderOrders();
+      syncShippingForm();
+      toast("Shipping label is ready to print.");
+    }
+
+    function saveSettings() {
+      settings = {
+        ordersEndpoint: $("ordersEndpoint").value.trim(),
+        labelEndpoint: $("labelEndpoint").value.trim(),
+        shipmentEndpoint: $("shipmentEndpoint").value.trim(),
+        storeName: $("storeName").value.trim() || "Marketplace Store",
+        shipFrom: $("shipFrom").value.trim()
+      };
+      localStorage.setItem("wmSettings", JSON.stringify(settings));
+      toast("Settings saved locally.");
+    }
+
+    function loadSettings() {
+      $("ordersEndpoint").value = settings.ordersEndpoint;
+      $("labelEndpoint").value = settings.labelEndpoint;
+      $("shipmentEndpoint").value = settings.shipmentEndpoint;
+      $("storeName").value = settings.storeName;
+      $("shipFrom").value = settings.shipFrom;
+    }
+
+    function setSection(section) {
+      currentSection = section;
+      document.querySelectorAll(".nav button").forEach(btn => btn.classList.toggle("active", btn.dataset.section === section));
+      document.querySelectorAll(".section").forEach(el => el.classList.toggle("active", el.id === section));
+      const titles = {
+        orders: ["Released orders", "Download orders, prepare shipments, and print documents from one queue."],
+        shipping: ["Ship with Walmart", "Create labels, preview shipping documents, and print carrier-ready output."],
+        settings: ["API setup", "Connect this browser UI to your secure backend proxy."]
+      };
+      $("pageTitle").textContent = titles[section][0];
+      $("pageSubtitle").textContent = titles[section][1];
+      if (section === "shipping") syncShippingForm();
+    }
+
+    document.querySelector(".nav").addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-section]");
+      if (button) setSection(button.dataset.section);
+    });
+
+    $("ordersBody").addEventListener("click", (event) => {
+      const row = event.target.closest("tr[data-id]");
+      if (!row) return;
+      selectedId = row.dataset.id;
+      renderOrders();
+    });
+
+    ["searchInput", "statusFilter", "methodFilter"].forEach(id => $(id).addEventListener("input", renderOrders));
+    ["carrier", "serviceMethod", "weight", "dims"].forEach(id => $(id).addEventListener("input", renderLabel));
+    $("downloadBtn").addEventListener("click", downloadCsv);
+    $("syncBtn").addEventListener("click", syncOrders);
+    $("shipBtn").addEventListener("click", buyLabel);
+    $("printLabelBtn").addEventListener("click", () => selectedOrder() && printHtml(labelHtml(selectedOrder())));
+    $("packingSlipBtn").addEventListener("click", () => selectedOrder() && printHtml(packingSlipHtml(selectedOrder())));
+    $("saveSettingsBtn").addEventListener("click", saveSettings);
+    $("importBtn").addEventListener("click", () => $("fileInput").click());
+    $("fileInput").addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const data = JSON.parse(await file.text());
+      orders = Array.isArray(data) ? data : data.orders || [];
+      selectedId = orders[0]?.purchaseOrderId || "";
+      persistOrders();
+      renderOrders();
+      toast("JSON orders imported.");
+    });
+
+    loadSettings();
+    renderOrders();
+  </script>
+</body>
+</html>
